@@ -75,36 +75,36 @@ const bool CDtvEngine::BuildEngine(CEventHandler *pEventHandler,
 	    ↓
 	CTsAnalyzer
 	    ↓
+	CCasProcessor
+	    ↓
 	CMediaTee──────┐
 	    ↓               ↓
-	CEventManager    CCasProcessor
+	CEventManager    CCaptionDecoder
 	    ↓               ↓
-	CLogoDownloader  CCaptionDecoder
+	CLogoDownloader  CMediaGrabber
 	    ↓               ↓
-	CTsSelector      CMediaGrabber
+	CTsSelector      CMediaBuffer
 	    ↓               ↓
-	CFileWriter      CMediaBuffer
-	                     ↓
-	                 CMediaViewer
+	CFileWriter      CMediaViewer
 	*/
 
 	Trace(TEXT("デコーダグラフを構築しています..."));
 
 	// デコーダグラフ構築
 	m_TsPacketParser.SetOutputDecoder(&m_TsAnalyzer);
-	m_TsAnalyzer.SetOutputDecoder(&m_MediaTee);
+	m_TsAnalyzer.SetOutputDecoder(&m_CasProcessor);
+	m_CasProcessor.SetOutputDecoder(&m_MediaTee);
+	m_CasProcessor.EnableDescramble(bDescramble);
+	m_bDescramble = bDescramble;
 	if (bEventManager) {
 		m_MediaTee.SetOutputDecoder(&m_EventManager, 0);
 		m_EventManager.SetOutputDecoder(&m_LogoDownloader);
 	} else {
 		m_MediaTee.SetOutputDecoder(&m_LogoDownloader, 0);
 	}
-	m_MediaTee.SetOutputDecoder(&m_CasProcessor, 1);
+	m_MediaTee.SetOutputDecoder(&m_CaptionDecoder, 1);
 	m_LogoDownloader.SetOutputDecoder(&m_TsSelector);
 	m_TsSelector.SetOutputDecoder(&m_FileWriter);
-	m_CasProcessor.SetOutputDecoder(&m_CaptionDecoder);
-	m_CasProcessor.EnableDescramble(bDescramble);
-	m_bDescramble = bDescramble;
 	m_CaptionDecoder.SetOutputDecoder(&m_MediaGrabber);
 	if (bBuffering) {
 		m_MediaGrabber.SetOutputDecoder(&m_MediaBuffer);
