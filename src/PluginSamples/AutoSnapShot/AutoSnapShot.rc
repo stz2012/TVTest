@@ -1,5 +1,5 @@
 #include "resource.h"
-#include <afxres.h>
+#include <winres.h>
 
 
 IDD_SETTINGS DIALOG DISCARDABLE 0,0,116,50
